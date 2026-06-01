@@ -33,13 +33,38 @@ def initialize_system():
     # Загружаем переменные окружения из .env файла
     load_dotenv()
     
-    # Проверяем наличие API ключа OpenAI
-    api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        print("⚠️  ВНИМАНИЕ: Не найден OPENAI_API_KEY в переменных окружения!")
-        print("   Создайте файл .env и добавьте туда: OPENAI_API_KEY=your_key_here")
-        print("   Или установите переменную окружения в системе.")
-        print()
+    # Определяем провайдера API (OpenAI или ProxyAPI)
+    use_proxyapi = os.getenv("USE_PROXYAPI", "false").lower() == "true"
+    
+    if use_proxyapi:
+        # Режим ProxyAPI
+        api_key = os.getenv("PROXYAPI_KEY")
+        base_url = os.getenv("PROXYAPI_BASE_URL", "https://api.proxyapi.ru/openai/v1")
+        provider_name = "ProxyAPI"
+        
+        if not api_key:
+            print("⚠️  ВНИМАНИЕ: Не найден PROXYAPI_KEY в переменных окружения!")
+            print("   Создайте файл .env и добавьте туда: PROXYAPI_KEY=your_key_here")
+            print("   Или установите USE_PROXYAPI=false для использования OpenAI API.")
+            print()
+    else:
+        # Режим OpenAI
+        api_key = os.getenv("OPENAI_API_KEY")
+        base_url = None
+        provider_name = "OpenAI"
+        
+        if not api_key:
+            print("⚠️  ВНИМАНИЕ: Не найден OPENAI_API_KEY в переменных окружения!")
+            print("   Создайте файл .env и добавьте туда: OPENAI_API_KEY=your_key_here")
+            print("   Или установите USE_PROXYAPI=true для использования ProxyAPI.")
+            print()
+    
+    print(f"\n📡 Провайдер API: {provider_name}")
+    
+    # Получаем настройки моделей из переменных окружения
+    embedding_model = os.getenv("EMBEDDING_MODEL", "text-embedding-3-small")
+    llm_model = os.getenv("MODEL_NAME", "gpt-3.5-turbo")
+    temperature = float(os.getenv("TEMPERATURE", "0.7"))
     
     # 1. Инициализируем кеш для хранения ответов
     print("\n[1/4] Инициализация кеша...")
@@ -50,8 +75,9 @@ def initialize_system():
     embedding_store = EmbeddingStore(
         collection_name="rag_documents",
         persist_directory="./chroma_db",
-        embedding_model="text-embedding-3-small",  # Модель OpenAI для эмбеддингов
-        api_key=api_key
+        embedding_model=embedding_model,
+        api_key=api_key,
+        base_url=base_url
     )
     
     # Проверяем, нужно ли добавить примеры документов
@@ -66,8 +92,10 @@ def initialize_system():
     print("\n[3/4] Инициализация RAG-ассистента...")
     rag_assistant = RAGAssistant(
         embedding_store=embedding_store,
-        model="gpt-3.5-turbo",
-        temperature=0.7
+        api_key=api_key,
+        base_url=base_url,
+        model=llm_model,
+        temperature=temperature
     )
     
     # 4. Инициализируем логгер базы данных

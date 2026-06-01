@@ -25,7 +25,8 @@ class VectorStore:
         collection_name: str = "rag_documents",
         persist_directory: str = "./chroma_db",
         embedding_model: str = "text-embedding-3-small",
-        api_key: Optional[str] = None
+        api_key: Optional[str] = None,
+        base_url: Optional[str] = None
     ):
         """
         Инициализация векторного хранилища.
@@ -34,13 +35,15 @@ class VectorStore:
             collection_name: Имя коллекции в ChromaDB
             persist_directory: Директория для сохранения данных
             embedding_model: Модель для создания эмбеддингов
-            api_key: API ключ OpenAI
+            api_key: API ключ OpenAI/ProxyAPI
+            base_url: Базовый URL API (для ProxyAPI)
         """
         self.embedding_store = EmbeddingStore(
             collection_name=collection_name,
             persist_directory=persist_directory,
             embedding_model=embedding_model,
-            api_key=api_key or os.getenv("OPENAI_API_KEY")
+            api_key=api_key or os.getenv("OPENAI_API_KEY"),
+            base_url=base_url
         )
     
     def add_documents(self, documents: List[Tuple[str, str]]) -> None:

@@ -22,6 +22,7 @@
 
 - ✅ **Локальное векторное хранилище** с ChromaDB
 - ✅ **OpenAI эмбеддинги** для высокого качества поиска
+- ✅ **Поддержка ProxyAPI** — альтернатива прямому OpenAI API для пользователей из РФ
 - ✅ **Семантический поиск** по документам
 - ✅ **Кеширование ответов** для экономии API-запросов
 - ✅ **Простая архитектура** с понятным кодом
@@ -54,15 +55,33 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 4. Настройка API ключа OpenAI
+### 4. Настройка API ключа
 
-Создайте файл `.env` в корне проекта и добавьте ваш API ключ:
+Создайте файл `.env` в корне проекта (скопируйте из `env.example`).
+
+**Вариант A: Использование OpenAI API (прямой доступ)**
 
 ```env
+USE_PROXYAPI=false
 OPENAI_API_KEY=your_openai_api_key_here
 ```
 
 Получить API ключ можно на [platform.openai.com](https://platform.openai.com/api-keys)
+
+**Вариант B: Использование ProxyAPI (рекомендуется для РФ)**
+
+```env
+USE_PROXYAPI=true
+PROXYAPI_KEY=your_proxyapi_key_here
+```
+
+[ProxyAPI](https://proxyapi.ru/) — российский сервис-прокси для доступа к моделям OpenAI, Anthropic и других. Преимущества:
+- ✅ Оплата в рублях (карты РФ, СБП, крипта)
+- ✅ Не требует VPN
+- ✅ Доступ к моделям: GPT-4o, GPT-4o-mini, GPT-4-turbo и др.
+- ✅ Те же цены, что и у OpenAI (без наценки)
+
+Получить ключ можно на [proxyapi.ru](https://proxyapi.ru/)
 
 ## 🚀 Запуск
 

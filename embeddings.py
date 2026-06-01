@@ -17,7 +17,7 @@ class EmbeddingStore:
     """
     Класс для работы с векторным хранилищем ChromaDB.
     
-    Использует OpenAI API для создания эмбеддингов
+    Использует OpenAI API (или ProxyAPI) для создания эмбеддингов
     и ChromaDB для их хранения и поиска.
     """
     
@@ -26,7 +26,8 @@ class EmbeddingStore:
         collection_name: str = "documents",
         persist_directory: str = "./chroma_db",
         embedding_model: str = "text-embedding-3-small",
-        api_key: str = None
+        api_key: str = None,
+        base_url: str = None
     ):
         """
         Инициализация хранилища эмбеддингов.
@@ -35,7 +36,8 @@ class EmbeddingStore:
             collection_name: Имя коллекции в ChromaDB
             persist_directory: Директория для сохранения данных ChromaDB
             embedding_model: Название модели OpenAI для эмбеддингов
-            api_key: API ключ OpenAI (если None, берется из переменной окружения)
+            api_key: API ключ OpenAI/ProxyAPI (если None, берется из переменной окружения)
+            base_url: Базовый URL API (для ProxyAPI: https://api.proxyapi.ru/openai/v1)
         """
         print(f"Инициализация ChromaDB в директории: {persist_directory}")
         
@@ -49,8 +51,13 @@ class EmbeddingStore:
         )
         
         # Инициализируем клиент OpenAI для создания эмбеддингов
-        # API ключ берется из параметра или переменной окружения OPENAI_API_KEY
-        self.openai_client = OpenAI(api_key=api_key or os.getenv("OPENAI_API_KEY"))
+        # Поддерживаем как прямой OpenAI API, так и ProxyAPI через base_url
+        client_kwargs = {"api_key": api_key or os.getenv("OPENAI_API_KEY")}
+        if base_url:
+            client_kwargs["base_url"] = base_url
+            print(f"Используется кастомный API endpoint: {base_url}")
+        
+        self.openai_client = OpenAI(**client_kwargs)
         self.embedding_model = embedding_model
         
         print(f"Модель эмбеддингов: {embedding_model} (OpenAI API)")
